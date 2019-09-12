@@ -9,7 +9,7 @@ from pprint import pprint
 
 curdir = "/eos/cms/store/group/phys_higgs/cmshww/amassiro/HWWNano/Fall2017_102X_nAODv4_Full2017v5/MCl1loose2017v5__MCCorr2017v5__VBSjjlnuSkim2017v3"
 
-file_path = os.path.join(curdir, "nanoLatino_WpToLNu_ZTo2J__part9.root")
+file_path = os.path.join(curdir, "nanoLatino_WpToLNu_WmTo2J_*.root")
 print(file_path)
 
 df = ROOT.RDataFrame("Events",file_path)
@@ -18,7 +18,7 @@ df = ROOT.RDataFrame("Events",file_path)
 ROOT.gInterpreter.Declare("""
     template
     <typename container>
-    float alternate(container c, int index, float alt){
+    float Alt(container c, int index, float alt){
         if (index < c.size()) {
             return c[index];
         }
@@ -28,11 +28,6 @@ ROOT.gInterpreter.Declare("""
     }
 """)
 
-# c = ROOT.TCanvas("name","title", 800, 700)
-# myhist = df.Range(100).Histo1D("CaloMET_pt")
-# myhist.Draw()
-# c.SaveAs("img_jetpt1.png")
-
 
 #########
 #ALIASES#
@@ -40,13 +35,11 @@ ROOT.gInterpreter.Declare("""
 aliases = {}
 
 aliases['bVeto'] = {
-'expr': 'auto condition_vec = (CleanJet_pt > 20. && abs(CleanJet_eta)<2.5 && Jet_btagDeepB[CleanJet_jetIdx] > 0.1241); \
-         return std::accumulate(condition_vec.begin(), condition_vec.end(), 0) == 0;'
+'expr': 'Sum(CleanJet_pt > 20. && abs(CleanJet_eta)<2.5 && Jet_btagDeepB[CleanJet_jetIdx] > 0.1241);'
 }
 
 aliases['btag0'] = {
-'expr': 'auto condition_vec =  (CleanJet_pt > 20. && abs(CleanJet_eta)<2.5 && Jet_btagDeepB[CleanJet_jetIdx] > 0.1241); \
-         return alternate(CleanJet_pt, 0, 0) < 30 && std::accumulate(condition_vec.begin(), condition_vec.end(), 0) > 0;'
+'expr': 'Sum(CleanJet_pt > 20. && abs(CleanJet_eta)<2.5 && Jet_btagDeepB[CleanJet_jetIdx] > 0.1241);'
 }
 
 #########
@@ -57,9 +50,9 @@ cuts['supercut'] = {
   'expr': '(nLepton==1 && Lepton_pt[0]>30 ) \
             && (  Lepton_isTightElectron_mvaFall17V2Iso_WP90[0] > 0.5 \
                     || Lepton_isTightMuon_cut_Tight_HWWW[0] > 0.5) \
-                && alternate(Lepton_pt,1,0)<=10 && alternate(Lepton_isLoose,1,1)>0.5\
-                && ( alternate(Lepton_isTightElectron_mvaFall17V2Iso_WP90,1, 0) < 0.5 \
-                && alternate(Lepton_isTightMuon_cut_Tight_HWWW,1,0) < 0.5 ) \
+                && Alt(Lepton_pt,1,0)<=10 && Alt(Lepton_isLoose,1,1)>0.5\
+                && ( Alt(Lepton_isTightElectron_mvaFall17V2Iso_WP90,1, 0) < 0.5 \
+                && Alt(Lepton_isTightMuon_cut_Tight_HWWW,1,0) < 0.5 ) \
             && VBS_category ==1    \
             && vbs_pt_low >= 30    \
             && vjet_pt_low >= 30    \
@@ -92,22 +85,6 @@ cuts['ele_looseVBS'] ={
   'doNumpy': False        
 }
 
-# cuts['Zee'] = {
-#   'expr': '(Lepton_pdgId[0] * Lepton_pdgId[1] == -11*11)   \
-#                  && Lepton_pt[0]>25 && Lepton_pt[1]>13 \
-#                  && mll>60 && mll<120 ;\
-#                ',
-#   'parent': 'supercut',
-#   'doVars': True
-# }
-
-# cuts['Zmm'] = {
-#   'expr': '(Lepton_pdgId[0] * Lepton_pdgId[1] == -13*13)  \
-#                  && mll>60 && mll<120;',
-#   'parent': 'supercut',
-#   'doVars': True
-# }
-
 ###########
 #VARIABLES#
 ###########
@@ -115,15 +92,14 @@ variables = {}
 
 
 variables['njet']  = {
-                        'name': "auto condition_vec = CleanJet_pt > 30;\
-                         return std::accumulate(condition_vec.begin(), condition_vec.end(), 0);",
+                        'name': "Sum(CleanJet_pt > 30);",
                         'range' : (5,0,5),
                         'xaxis' : 'Number of jets',
                         'fold' : 2   # 0 = not fold (default), 1 = fold underflowbin, 2 = fold overflow bin, 3 = fold underflow and overflow
                         }
 
 variables['jetpt1']  = {
-                        'name': 'CleanJet_pt[0]*(CleanJet_pt[0]>0);',
+                        'name': 'CleanJet_pt[0]',
                         'range' : (40,15,50),
                         'xaxis' : 'p_{T} 1st jet',
                         'fold' : 2   # 0 = not fold (default), 1 = fold underflowbin, 2 = fold overflow bin, 3 = fold underflow and overflow
@@ -160,19 +136,7 @@ def define_variable(cuts, variables):
                         cutkey+"_var_"+varkey )
 
       cutvalue["rdf_node"] = cutvalue["rdf_node_cache"][-1]
-      
-
-# def plot(cuts):
-#   print("\n\nEntering plot function\n\n")
-#   pprint(cuts)
-#   for cutkey, cutvalue in cuts.items():
-#     if "histos" in cutvalue.keys():
-#       for var, histo in cutvalue["histos"].items():
-#         print("Printing {} canvas with {} histogram".format(cutkey+"_"+var, var))
-#         c = ROOT.TCanvas(cutkey+"_"+var, cutkey+"_"+var, 800,700)
-#         histo.Draw()
-#         c.SaveAs("img_{}.png".format(var))
-#         break
+  
 
 aliases_df = define_aliases(df, aliases)
 
