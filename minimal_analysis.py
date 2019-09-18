@@ -35,11 +35,11 @@ ROOT.gInterpreter.Declare("""
 aliases = {}
 
 aliases['bVeto'] = {
-'expr': 'Sum(CleanJet_pt > 20. && abs(CleanJet_eta)<2.5 && Jet_btagDeepB[CleanJet_jetIdx] > 0.1241);'
+'expr': '2;'
 }
 
 aliases['btag0'] = {
-'expr': 'Sum(CleanJet_pt > 20. && abs(CleanJet_eta)<2.5 && Jet_btagDeepB[CleanJet_jetIdx] > 0.1241);'
+'expr': '1;'
 }
 
 #########
@@ -105,7 +105,7 @@ variables['jetpt1']  = {
                         'fold' : 2   # 0 = not fold (default), 1 = fold underflowbin, 2 = fold overflow bin, 3 = fold underflow and overflow
                         }
 
-output_variables= ["mjj_vbs", "vbs_pt_high", "mjj_vjet"] 
+output_variables= ["mjj_vbs", "vbs_pt_high", "mjj_vjet", "bVeto", "btag0"] 
 
 
 def define_aliases(df, aliases):
