@@ -12,7 +12,7 @@ variables['events']  = {   'name': '1',
 
 #jets 
 
-variables['nJets'] = {   'name': 'Sum$(CleanJet_pt >= 30)',      
+variables['nJets'] = {   'name': 'Sum(CleanJet_pt >= 30)',      
                         'range' : (10,0,10),  
                         'xaxis' : 'nJets >= 30 GeV', 
                         'fold' : 3
