@@ -2,12 +2,15 @@ import os
 import json
 import copy
 from pprint import pprint
+import ROOT as R
 
 class Node:
   def __init__(self, name, obj):
     self.name = name
     self.expr = obj["expr"]
     self.vars = []
+    self.aliases = []
+    self.weight = None
     self.parent = obj["parent"]
     self.doVars = obj.get("doVars", False)
     self._rdf_cache = []
@@ -30,6 +33,8 @@ class Node:
     out.append("cache: {}".format( self._rdf_cache))
     out.append("cut: {}".format( self.expr))
     out.append("vars: {}".format(",".join(self.vars)))
+    out.append("aliases: {}".format(",".join(self.aliases)))
+    out.append("weight: {}".format(self.weight))
     return "\n".join(out)
 
   def __repr__(self):
@@ -51,9 +56,10 @@ class Tree:
       return False
     for key in aliases.keys():
       self.tree[node].rdf_node = self.tree[node].rdf_node.Define(key, aliases[key]["expr"])
+      self.tree[node].aliases.append(key)
     return True
 
-  def define_cut(self, cut):
+  def define_cuts(self, cut):
     if cut not in self.tree:
       print("Cut not found")
       return False
@@ -67,7 +73,7 @@ class Tree:
     # Now do it for each children
     for child_node in self.tree.values():
       if child_node.parent == node.name:
-        self.define_cut(child_node.name)
+        self.define_cuts(child_node.name)
 
   def define_variables(self, variables):
     for name, node in self.tree.items():
@@ -75,6 +81,13 @@ class Tree:
         for varkey, varvalue in variables.items():
           node.rdf_node = node.rdf_node.Define(name+"_var_"+varkey, varvalue["name"])
           node.vars.append(name+"_var_"+varkey)
+
+  def define_weight(self, weight):
+    for name, node in self.tree.items():
+      if node.doVars == True:
+        node.rdf_node = node.rdf_node.Define("weight", weight)
+        node.weight = weight
+
   
   def __getattr__(self, key):
     return self.tree.get(key, None)
@@ -93,7 +106,7 @@ class Tree:
 
 #######################################################################################################
 
-def build_dataframe(conf_dir, sample, rdf_class):
+def build_dataframe(conf_dir, sample, rdf_class, rdf_type):
     
   samples = json.load(open(conf_dir + "/samples.json"))
   variables = {}
@@ -117,41 +130,43 @@ def build_dataframe(conf_dir, sample, rdf_class):
   weights_group = []
 
   if "weights" in sample_data:
+    # dividere il dataframe in diversi pezzi
     pass
 
   else:
-    files = [ f[3:] for f in sample_data["name"] ]
+    if rdf_type == "root":
+      files = R.std.vector("string")
+      for f in sample_data["name"]:
+        files.push_back(f[3:])
+    else:
+      files = [ f[3:] for f in sample_data["name"] ]
 
+    # Create RDataFrame
     df = rdf_class.RDataFrame("Events", files)
     dfs.append(df)
 
-  # Add global and group weights
-  dfs_weights = []
-  for idf, df in enumerate(dfs):
-    # Remove XS weight 
-    weight = "("+ sample_data["weight"].replace("XSWeight", "1") +")"
-    if weights_group:
-      weight += "*("+ weights_group[idf] + ")"
-    
-    dfw = df.Define("weight", weight)
-
-    dfs_weights.append(dfw)
-
+ 
   # Now for each initial DF, 
   # Create alias, create cuts, create variables
   chains = []
 
-  for df in dfs_weights:
+  for idf, df in enumerate(dfs):
     # The cut tree is the base structure
     tree = Tree(cuts)
     tree.supercut.rdf_node = df
-    tree.define_aliases("supercut", aliases)
-    tree.define_cut("supercut")
-    dir(tree)
+    tree.define_aliases("supercut", aliases)   
+
+    tree.define_cuts("supercut")
     tree.define_variables(variables)
 
-    print(tree)
+    # Now add the sample global weight
+    weight = "("+ sample_data["weight"].replace("XSWeight", "1") +")"
+    if weights_group:
+      weight += "*("+ weights_group[idf] + ")"
+    tree.define_weight(weight)
+
     chains.append(tree)
 
+  
   return chains
 
