@@ -102,7 +102,8 @@ class Tree:
       out.append("--------------------------------------------------------------------------------")
     return "\n".join(out)
      
-  
+  def __repr__(self):
+    return str(self)
 
 #######################################################################################################
 
@@ -135,7 +136,7 @@ def build_dataframe(conf_dir, sample, rdf_class, rdf_type):
 
   else:
     if rdf_type == "root":
-      files = R.std.vector("string")
+      files = R.std.vector("string")()
       for f in sample_data["name"]:
         files.push_back(f[3:])
     else:
