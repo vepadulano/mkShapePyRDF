@@ -82,11 +82,14 @@ class Tree:
           node.rdf_node = node.rdf_node.Define(name+"_var_"+varkey, varvalue["name"])
           node.vars.append(name+"_var_"+varkey)
 
-  def define_weight(self, weight):
-    for name, node in self.tree.items():
-      if node.doVars == True:
-        node.rdf_node = node.rdf_node.Define("weight", weight)
-        node.weight = weight
+  def define_weight(self, node, weight):
+    if node not in self.tree:
+      print("Cut not found")
+      return False
+    node = self.tree[node]
+    # Add also a cut on weight != 0 in case cut and weight are mixed
+    node.rdf_node = node.rdf_node.Define("weight", weight).Filter("weight != 0")
+    node.weight = weight
 
   
   def __getattr__(self, key):
@@ -130,9 +133,31 @@ def build_dataframe(conf_dir, sample, rdf_class, rdf_type):
   dfs = []
   weights_group = []
 
+  # Check if the samples had to be devided in 
+  # different dataframes with different weights. 
   if "weights" in sample_data:
+    files_groups = {}
     # dividere il dataframe in diversi pezzi
-    pass
+    for iw, w in enumerate(sample_data["weights"]):
+      if w not in weights_group:
+        weights_group.append(w)
+        files_groups[w] = []
+
+      files_groups[w].append(sample_data["name"][iw])
+    
+    #create all the dfs
+    for w, fgroup in files_groups.items():
+      if rdf_type == "root":
+        files = R.std.vector("string")()
+        for f in fgroup:
+          files.push_back(f[3:])
+      else:
+        files = [ f[3:] for f in fgroup ]
+      
+      # Create the dataframe
+      df = rdf_class.RDataFrame("Events", files )
+      dfs.append(df)
+
 
   else:
     if rdf_type == "root":
@@ -148,7 +173,7 @@ def build_dataframe(conf_dir, sample, rdf_class, rdf_type):
 
  
   # Now for each initial DF, 
-  # Create alias, create cuts, create variables
+  # Create alias, global weight, create cuts, create variables
   chains = []
 
   for idf, df in enumerate(dfs):
@@ -157,14 +182,18 @@ def build_dataframe(conf_dir, sample, rdf_class, rdf_type):
     tree.supercut.rdf_node = df
     tree.define_aliases("supercut", aliases)   
 
-    tree.define_cuts("supercut")
-    tree.define_variables(variables)
-
     # Now add the sample global weight
     weight = "("+ sample_data["weight"].replace("XSWeight", "1") +")"
     if weights_group:
       weight += "*("+ weights_group[idf] + ")"
-    tree.define_weight(weight)
+    # Define the weight on the super cut, after aliases
+    # This is cut becase the weight can be used as a cut
+    tree.define_weight("supercut", weight)
+    tree.define_cuts("supercut")
+    
+    tree.define_variables(variables)
+
+    
 
     chains.append(tree)
 
