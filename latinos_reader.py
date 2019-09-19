@@ -30,7 +30,7 @@ class Node:
     out = []
     out.append("name: {}".format( self.name))
     out.append("parent: {}".format( self.parent))
-    out.append("cache: {}".format( self._rdf_cache))
+    #out.append("cache: {}".format( self._rdf_cache))
     out.append("cut: {}".format( self.expr))
     out.append("vars: {}".format(",".join(self.vars)))
     out.append("aliases: {}".format(",".join(self.aliases)))
