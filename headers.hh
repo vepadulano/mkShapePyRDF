@@ -14,12 +14,9 @@ float Alt(container c, int index, float alt){
     }
 }
 
-using namespace ROOT::VecOps;
-
 RVec<double> LogVec(RVec<double> vec){
     RVec<double> out; 
     for(auto const & el : vec){
         out.push_back(TMath::Log(el));
-
 
 #endif
