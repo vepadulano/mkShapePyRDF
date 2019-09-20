@@ -79,8 +79,9 @@ class Tree:
     for name, node in self.tree.items():
       if node.doVars == True:
         for varkey, varvalue in variables.items():
-          node.rdf_node = node.rdf_node.Define(name+"_var_"+varkey, varvalue["name"])
-          node.vars.append(name+"_var_"+varkey)
+          print(varkey, varvalue["name"])
+          node.rdf_node = node.rdf_node.Define(varkey, varvalue["name"])
+          node.vars.append(varkey)
 
   def define_weight(self, node, weight):
     if node not in self.tree:

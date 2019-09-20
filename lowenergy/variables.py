@@ -2,6 +2,13 @@
 
 #variables = {}
     
+    
+variables['lep_flavour'] = {   'name': 'abs(Lepton_pdgId[0])',      
+                        'range' : (10,0,10),  
+                        'xaxis' : 'Lepton flavour', 
+                        'fold' : 3
+                        }
+
 
 variables['events']  = {   'name': '1',      
                         'range' : (1,0,2),  
@@ -19,20 +26,18 @@ variables['nJets'] = {   'name': 'Sum(CleanJet_pt >= 30)',
 
 #leptons
 
-variables['Lepton_eta'] = {   'name': 'abs(Lepton_eta[0])',      
+variables['lep_eta'] = {   'name': 'abs(Lepton_eta[0])',      
                         'range' : (40,0,2.5),  
                         'xaxis' : 'Lepton #eta', 
                         'fold' : 3
                         }
 
 
-variables['Lepton_pt'] = {   'name': 'Lepton_pt[0]',      
+variables['lep_pt'] = {   'name': 'Lepton_pt[0]',      
                         'range' : (40,0,300),  
                         'xaxis' : 'Lepton pt', 
                         'fold' : 3
                         }                       
-
-
 
 variables["vbs_index_high"] = {   'name': 'VBS_jets_maxmjj_massWZ[0]',      
                         'range' : (10,0,10),  

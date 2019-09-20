@@ -19,47 +19,20 @@ cuts["supercut"] ={
     'doNumpy': False
 }
 
-cuts["lowen_ele"] = {
-    'expr' : 'abs(Lepton_pdgId[0])==11 \
-                && Lepton_pt[0] >= 40 ',
-    'parent' : 'supercut',
-    'doVars': False,
-    'doNumpy': False
-} 
-                        
-# cuts["lowen_mu"] = {
-#     'expr' : 'abs(Lepton_pdgId[0])==13 \
-#                 && Lepton_pt[0] >= 30 ',
-#     'parent' : 'supercut',
-#     'doVars': False,
-#     'doNumpy': False
-# } 
-
 # No associated jets in the horn
-cuts["lowen_ele_looseVBS"] = {
+cuts["lowen_looseVBS"] = {
     'expr' : 'mjj_vbs >=300    \
             && deltaeta_vbs >= 2  \
-            && PuppiMET_pt > 30 \
+            && PuppiMET_pt > 20 \
             && bVeto \
             && mjj_vjet > 65 && mjj_vjet < 105 \
             ',
-    'parent' : 'lowen_ele',
+    'parent' : 'supercut',
     'doVars': True,
     'doNumpy': True
 }
 
 
-# cuts["lowen_mu_looseVBS"] = {
-#     'expr' : 'mjj_vbs >=300    \
-#             && deltaeta_vbs >= 2  \
-#             && PuppiMET_pt > 30 \
-#             && bVeto \
-#             && mjj_vjet > 65 && mjj_vjet < 105 \
-#                          ',
-#     'parent' : 'lowen_mu',
-#     'doVars': True,
-#     'doNumpy': True
-# }
 
 # cuts["lowen_ele_topCR"] = 'abs(Lepton_pdgId[0])==11 \
 #                                 && Lepton_pt[0] >= 40   \
