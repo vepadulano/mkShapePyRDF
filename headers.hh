@@ -14,12 +14,12 @@ float Alt(container c, int index, float alt){
     }
 }
 
-RVec<double> Loggone(RVec<double>numeri){
-    RVec<double> out;
-    for(auto const & a : numeri){
-        out.push_back(TMath::Log(a));
-    }
-    return out;
-}
+using namespace ROOT::VecOps;
+
+RVec<double> LogVec(RVec<double> vec){
+    RVec<double> out; 
+    for(auto const & el : vec){
+        out.push_back(TMath::Log(el));
+
 
 #endif

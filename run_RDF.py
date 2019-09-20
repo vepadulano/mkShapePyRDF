@@ -1,11 +1,11 @@
-import PyRDF
+import ROOT as R 
+R.ROOT.EnableImplicitMT()
 
-PyRDF.use("local")
-PyRDF.include_headers("./headers.hh")
+R.gInterpreter.ProcessLine(".L headers.hh")
 
 import latinos_reader as lr  
 
-trees = lr.build_dataframe("./lowenergy", "VBS", PyRDF, "pyrdf")
+trees = lr.build_dataframe("./lowenergy", "Wjets", R, "root")
 tree = trees[0]
 
 # print( tree.lowen_ele_looseVBS.rdf_node.AsNumpy(columns=["mjj_vbs"]) )
