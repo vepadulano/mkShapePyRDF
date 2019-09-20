@@ -1,3 +1,8 @@
+#ifndef HEADERS_HH
+#define HEADERS_HH
+
+using namespace ROOT::VecOps;
+
 template
 <typename container>
 float Alt(container c, int index, float alt){
@@ -9,12 +14,12 @@ float Alt(container c, int index, float alt){
     }
 }
 
-using namespace ROOT::VecOps;
-
 RVec<double> Loggone(RVec<double>numeri){
-    RVec<double> out; 
+    RVec<double> out;
     for(auto const & a : numeri){
         out.push_back(TMath::Log(a));
     }
     return out;
 }
+
+#endif
