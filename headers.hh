@@ -18,5 +18,8 @@ RVec<double> LogVec(RVec<double> vec){
     RVec<double> out; 
     for(auto const & el : vec){
         out.push_back(TMath::Log(el));
+    }
+    return out;
+}
 
 #endif

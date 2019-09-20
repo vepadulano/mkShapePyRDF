@@ -181,6 +181,10 @@ def build_dataframe(conf_dir, sample, rdf_class, rdf_type):
     # The cut tree is the base structure
     tree = Tree(cuts)
     tree.supercut.rdf_node = df
+
+    # Filter out aliases not for this samples
+    aliases = { key: obj for key, obj in aliases.items() 
+              if "samples" not in obj or sample in obj["samples"]}
     tree.define_aliases("supercut", aliases)   
 
     # Now add the sample global weight
